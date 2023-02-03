@@ -250,7 +250,7 @@
             this.btn_cancel_connect.Name = "btn_cancel_connect";
             this.btn_cancel_connect.Size = new System.Drawing.Size(98, 34);
             this.btn_cancel_connect.TabIndex = 22;
-            this.btn_cancel_connect.Text = "取消連線";
+            this.btn_cancel_connect.Text = "停止倒數";
             this.btn_cancel_connect.UseVisualStyleBackColor = true;
             this.btn_cancel_connect.Click += new System.EventHandler(this.btn_cancel_connect_Click);
             // 

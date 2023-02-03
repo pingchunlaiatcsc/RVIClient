@@ -28,12 +28,16 @@ namespace RVIClient
         //Socket T_forEPSLog;
         Thread Th_forEPSLog;
         Thread Th_forCCTV;
+        Thread Th_SocketConnectionSupervisor;
         string User;
         static string PhotosPath;
         static Queue<string> CCTVWorkQueue = new Queue<string>();
         static Boolean debugMode = false;
         private System.Timers.Timer timer;
         private int CountDownTimeInSecond = 5;
+        private Boolean SocketConnectionState = false;
+        private Boolean ConnectTimerIsUsing = false;
+        private Boolean SuperVisorIsStart = false;
         public RVITrigger()
         {
             InitializeComponent();
@@ -47,19 +51,37 @@ namespace RVIClient
             debugMode = cb_debug.Checked;
             StartConnectTimer();
         }
-
+        public void SupervisorStart()
+        {
+            if (SuperVisorIsStart == false)
+            {
+                Th_SocketConnectionSupervisor = new Thread(SocketConnectionSupervisor);    //建立連線狀態監控執行緒
+                Th_SocketConnectionSupervisor.IsBackground = true;     //設定為背景執行緒
+                Th_SocketConnectionSupervisor.Start();
+                SuperVisorIsStart = true;
+            }
+        }
+        public void SocketConnectionSupervisor()
+        {
+            while (true)
+            {
+                if (SocketConnectionState == false) StartConnectTimer();
+                Thread.Sleep(10000);
+            }
+        }
         public void StartConnectTimer()
         {
+            CheckForIllegalCrossThreadCalls = false;
+            ConnectTimerIsUsing = true;
             timer = new System.Timers.Timer();
             timer.Interval = 1000; // 5 seconds
             timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             timer.Enabled = true;
-            tb_log.AppendText($"{CountDownTimeInSecond}秒後開始執行程式\r\n");
+            tb_log.AppendText($"{CountDownTimeInSecond}秒後開始連線\r\n");
         }
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            CheckForIllegalCrossThreadCalls = false;
             if (CountDownTimeInSecond > 0)
             {
                 // Update tb_log to show the remaining countdown
@@ -71,6 +93,7 @@ namespace RVIClient
                 // Show message box when the countdown reaches 0
                 timer.Enabled = false;
                 CountDownTimeInSecond = 5;
+                ConnectTimerIsUsing = false;
                 StartConnecting();
             }
             // Code to be executed when the timer elapses
@@ -93,7 +116,8 @@ namespace RVIClient
                 Communicate.T = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 Communicate.T.Connect(EP);              //連上伺服器的端點EP(類似撥號給電話總機)
                 //Communicate.Send("0" + "|" + User + "\\");
-                TCPClientData LoginMsg= new TCPClientData{
+                TCPClientData LoginMsg = new TCPClientData
+                {
                     Command = "NewUserLogin",
                     Sender = User
                 };
@@ -119,14 +143,18 @@ namespace RVIClient
                     Th_forCCTV.Start();
                 }
                 tb_log.AppendText(DateTime.Now + " " + "已連線伺服器!" + "\r\n");
-                ToggleButtonState();
+                SocketConnectionState = true;
+                ButtonStateCtrl();
+                SupervisorStart();
             }
             catch (Exception ex)
             {
                 if (debugMode) File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "upload_err_log.txt"), DateTime.Now + " " + ex.ToString() + "\n");
-                tb_log.AppendText(DateTime.Now + " " + "無法連上伺服器!" + "\r\n");
-                StartConnectTimer();
-                //return;
+                tb_log.AppendText(DateTime.Now + " " + "無法連上伺服器!-StartConnecting" + "\r\n");
+                SocketConnectionState = false;
+                ButtonStateCtrl();
+                SupervisorStart();
+                return;
             }
         }
 
@@ -147,38 +175,41 @@ namespace RVIClient
                 try
                 {
                     inLen = Communicate.T.ReceiveFrom(B, ref ServerEP);     //收聽資訊並取得位元組數
+                    Msg_JSON = Encoding.Default.GetString(B, 0, inLen);  //解讀完整訊息
+                    TCPClientData JsonData = JsonConvert.DeserializeObject<TCPClientData>(Msg_JSON);
+                    string Cmd = JsonData.Command;    //取出命令碼(第一個|之前的字)
+                    switch (Cmd)
+                    {
+                        case "UpdateUserList":                                   //接收線上名單
+                            lb_UserList.Items.Clear();                 //清除名單
+                            string[] M = JsonData.UserList.Split(',');            //拆解名單成陣列
+                            for (int i = 0; i < M.Length; i++)
+                            {
+                                lb_UserList.Items.Add(M[i]);           //逐一加入名單
+                            }
+                            break;
+                        case "TakePicture":
+                            tb_log.AppendText("(銷帳拍照)" + JsonData.DateAndTime + "_" + JsonData.CarId + "\r\n");      //顯示訊息並換行
+                            tb_IP.SelectionStart = tb_IP.Text.Length;//游標移到最後
+                            tb_IP.ScrollToCaret();                    //捲動到游標位置
+                            CCTVWorkQueue.Enqueue(JsonData.DateAndTime + "_" + JsonData.CarId);
+                            break;
+                    }
                 }
                 catch (Exception ex)
                 {
                     if (debugMode) File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "upload_err_log.txt"), DateTime.Now + " " + ex.ToString() + "\n");
                     Communicate.T.Close();                                  //關閉通訊器
                     lb_UserList.Items.Clear();                     //清除線上名單
-                    tb_log.AppendText(DateTime.Now + " " + "無法連上伺服器!" + "\r\n");
-                    ToggleButtonState();
-                    StartConnectTimer();
+                    tb_log.AppendText(DateTime.Now + " " + "無法連上伺服器!-Listen" + "\r\n");
+                    SocketConnectionState = false;
+                    ButtonStateCtrl();
+                    T.Close();
+                    //if (ConnectTimerIsUsing == false) StartConnectTimer();
                     Th.Abort();
-                    //return;
+                    return;
                 }
-                Msg_JSON = Encoding.Default.GetString(B, 0, inLen);  //解讀完整訊息
-                TCPClientData JsonData = JsonConvert.DeserializeObject<TCPClientData>(Msg_JSON);
-                string Cmd = JsonData.Command;    //取出命令碼(第一個|之前的字)
-                switch (Cmd)
-                {
-                    case "UpdateUserList":                                   //接收線上名單
-                        lb_UserList.Items.Clear();                 //清除名單
-                        string[] M = JsonData.UserList.Split(',');            //拆解名單成陣列
-                        for (int i = 0; i < M.Length; i++)
-                        {
-                            lb_UserList.Items.Add(M[i]);           //逐一加入名單
-                        }
-                        break;
-                    case "TakePicture":
-                        tb_log.AppendText("(銷帳拍照)" + JsonData.DateAndTime + "_" + JsonData.CarId + "\r\n");      //顯示訊息並換行
-                        tb_IP.SelectionStart = tb_IP.Text.Length;//游標移到最後
-                        tb_IP.ScrollToCaret();                    //捲動到游標位置
-                        CCTVWorkQueue.Enqueue(JsonData.DateAndTime + "_" + JsonData.CarId);
-                        break;
-                }
+
             }
         }
         private void ContinueDoCCTVWork()
@@ -217,7 +248,12 @@ namespace RVIClient
         {
             if (btn_connect.Enabled == false)
             {
-                Communicate.Send("9" + "|" + User);   //傳送自己的離線訊息給伺服器
+                TCPClientData LogoutMsg = new TCPClientData
+                {
+                    Command = "UserLogOut",
+                    Sender = User
+                };
+                Communicate.SendJSON(LogoutMsg);//傳送自己的離線訊息給伺服器    
                 T.Close();
             }
 
@@ -270,10 +306,16 @@ namespace RVIClient
         {
             try
             {
-                Communicate.Send("9" + "|" + User);   //傳送自己的離線訊息給伺服器                
+                TCPClientData LogoutMsg = new TCPClientData
+                {
+                    Command = "UserLogOut",
+                    Sender = User
+                };
+                Communicate.SendJSON(LogoutMsg);//傳送自己的離線訊息給伺服器    
                 tb_log.AppendText(DateTime.Now + " " + "已從伺服器離線!" + "\r\n");
                 lb_UserList.Items.Clear();
-                ToggleButtonState();
+                SocketConnectionState = false;
+                ButtonStateCtrl();
                 Th_forEPSLog.Abort();
             }
             catch (Exception ex)
@@ -281,15 +323,28 @@ namespace RVIClient
                 return;
             }
         }
-        private void ToggleButtonState()
+        private void ButtonStateCtrl()
         {
-            btn_connect.Enabled = !btn_connect.Enabled;
-            btn_sendMessage.Enabled = !btn_sendMessage.Enabled;
-            btn_disconnect.Enabled = !btn_disconnect.Enabled;
-            btn_takePic.Enabled = !btn_takePic.Enabled;
-            tb_IP.Enabled = !tb_IP.Enabled;
-            tb_UserName.Enabled = !tb_UserName.Enabled;
-            tb_Port.Enabled = !tb_Port.Enabled;
+            if (SocketConnectionState == true)
+            {
+                btn_connect.Enabled = false;
+                btn_sendMessage.Enabled = true;
+                btn_disconnect.Enabled = true;
+                btn_takePic.Enabled = true;
+                tb_IP.Enabled = false;
+                tb_UserName.Enabled = false;
+                tb_Port.Enabled = false;
+            }
+            else
+            {
+                btn_connect.Enabled = true;
+                btn_sendMessage.Enabled = false;
+                btn_disconnect.Enabled = false;
+                btn_takePic.Enabled = false;
+                tb_IP.Enabled = true;
+                tb_UserName.Enabled = true;
+                tb_Port.Enabled = true;
+            }
         }
         private class CCTV
         {
