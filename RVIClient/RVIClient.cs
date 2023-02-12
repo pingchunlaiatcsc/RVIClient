@@ -179,10 +179,10 @@ namespace RVIClient
                                 lb_UserList.Items.Add(M[i]);           //逐一加入名單
                             }
                             break;
-                        case "TakePicture":
-                            tb_log.AppendText("(銷帳拍照)" + JsonData.DateAndTime + "_" + JsonData.CarId + "\r\n");      //顯示訊息並換行
-                            CCTVWorkQueue.Enqueue(JsonData.DateAndTime + "_" + JsonData.CarId);
-                            break;
+                        //case "TakePicture":
+                        //    tb_log.AppendText("(銷帳拍照)" + JsonData.DateAndTime + "_" + JsonData.CarId + "\r\n");      //顯示訊息並換行
+                        //    CCTVWorkQueue.Enqueue(JsonData.DateAndTime + "_" + JsonData.CarId);
+                        //    break;
                         default:
                             tb_log.AppendText($"({Cmd}) : {JsonData.Message}");
                             break;

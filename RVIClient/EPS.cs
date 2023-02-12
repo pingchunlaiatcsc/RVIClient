@@ -66,15 +66,15 @@ namespace RVIClient
                 if (upload(rvi))
                 {
                     //$"：{DateTime.Now.ToString("yyyyMMdd_hhmmss")}_KLE1234F"
-                    string PicCMD = $"：{rvi.tdate.Value.ToString("yyyyMMdd_HHmmss")}_{rvi.carId}";
+                    //string PicCMD = $"：{rvi.tdate.Value.ToString("yyyyMMdd_HHmmss")}_{rvi.carId}";
 
                     //嘗試改以JSON作為通訊的格式
                     TCPClientData PicCMDJSON = new TCPClientData
                     {
-                        Command = PicCMD,
+                        Command = "TakePicture",
                         DateAndTime = $"{rvi.tdate.Value.ToString("yyyyMMdd_HHmmss")}",
                         CarId = $"{rvi.carId}",
-                        Sender = ""
+                        Sender = $"{User}"
                     };
                     //嘗試改以JSON作為通訊的格式
 
@@ -111,7 +111,7 @@ namespace RVIClient
                 //上次讀取log檔行數與這次讀取log檔行數相同，直接結束
                 if (allLinesCount == lastTimeReadLineIndex)
                 {
-                    tb_log_text = tb_log_text + DateTime.Now + " " + $"allLinesCount={allLinesCount}=lastTimeReadLineIndex={lastTimeReadLineIndex},代表log未新增紀錄，結束本次讀取作業。" + "\r\n";
+                    //tb_log_text = tb_log_text + DateTime.Now + " " + $"allLinesCount={allLinesCount}=lastTimeReadLineIndex={lastTimeReadLineIndex},代表log未新增紀錄，結束本次讀取作業。" + "\r\n";
                     return new List<remote_visual_inspection>();
                 }
 

@@ -10,7 +10,7 @@ namespace RVIClient.Models
     {
         public string Command { get; set; }
         public string DateAndTime { get; set; }
-        public string CarId { get; internal set; }
+        public string CarId { get; set; }
         public string Target { get; set; }
         public string Sender { get; set; }
         public string UserList { get; set; }
