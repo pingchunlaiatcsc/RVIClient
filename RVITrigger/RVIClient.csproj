@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{63911398-ECA7-4B5E-ADA4-4DD28FBD7169}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>RVITrigger</RootNamespace>
-    <AssemblyName>RVITrigger</AssemblyName>
+    <RootNamespace>RVIClient</RootNamespace>
+    <AssemblyName>RVIClient</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -69,18 +69,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RVITrigger.cs">
+    <Compile Include="CCTV.cs" />
+    <Compile Include="Communicate.cs" />
+    <Compile Include="EPS.cs" />
+    <Compile Include="Models\TCPClientData.cs" />
+    <Compile Include="RVIClient.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="RVITrigger.Designer.cs">
-      <DependentUpon>RVITrigger.cs</DependentUpon>
+    <Compile Include="RVIClient.Designer.cs">
+      <DependentUpon>RVIClient.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\remote_visual_inspection.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadINI.cs" />
-    <EmbeddedResource Include="RVITrigger.resx">
-      <DependentUpon>RVITrigger.cs</DependentUpon>
+    <EmbeddedResource Include="RVIClient.resx">
+      <DependentUpon>RVIClient.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

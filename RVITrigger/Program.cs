@@ -16,7 +16,7 @@ namespace RVIClient
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new RVITrigger());
+            Application.Run(new RVIClient());
         }
     }
 }
