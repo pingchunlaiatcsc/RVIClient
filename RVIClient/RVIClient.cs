@@ -332,34 +332,7 @@ namespace RVIClient
             CountDownTimeInSecond = 5;
         }
 
-        private void RVIClient_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            if (btn_connect.Enabled == false)
-            {
-                TCPClientData LogoutMsg = new TCPClientData
-                {
-                    Command = "UserLogOut",
-                    Sender = User
-                };
-                Communicate.SendJSON(LogoutMsg);//傳送自己的離線訊息給伺服器    
-                T.Close();
-            }
 
-            try
-            {
-                using (ReadINI oTINI = new ReadINI("./Config.ini"))
-                {
-                    oTINI.setKeyValue("ServerPort", "Value", tb_Port.Text);
-                    oTINI.setKeyValue("ServerIP", "Value", tb_IP.Text);
-                    oTINI.setKeyValue("UserName", "Value", tb_UserName.Text);
-                }
-            }
-            catch
-            {
-
-            }
-            Close();
-        }
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -389,13 +362,42 @@ namespace RVIClient
                 ////讓程式在工具列中隱藏
                 //this.ShowInTaskbar = false;
                 ////通知欄顯示Icon
-                //notifyIcon1.Visible = true;
+                notifyIcon1.Visible = true;
 
-                ////通知欄提示 (顯示時間毫秒，標題，內文，類型)
-                //notifyIcon1.ShowBalloonTip(1000, this.Text, "縮小至工作列圖示區", ToolTipIcon.Info);
-                ////notifyIcon1.ShowBalloonTip(3000, this.Text,
-                ////     "程式並未結束，要結束請在圖示上按右鍵，選取結束功能!", ToolTipIcon.Info);
+                //通知欄提示 (顯示時間毫秒，標題，內文，類型)
+                notifyIcon1.ShowBalloonTip(1000, this.Text, "縮小至工作列圖示區", ToolTipIcon.Info);
+                //notifyIcon1.ShowBalloonTip(3000, this.Text,
+                //     "程式並未結束，要結束請在圖示上按右鍵，選取結束功能!", ToolTipIcon.Info);
             }
+        }
+
+        private void RVIClient_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (btn_connect.Enabled == false)
+            {
+                TCPClientData LogoutMsg = new TCPClientData
+                {
+                    Command = "UserLogOut",
+                    Sender = User
+                };
+                Communicate.SendJSON(LogoutMsg);//傳送自己的離線訊息給伺服器    
+                T.Close();
+            }
+
+            try
+            {
+                using (ReadINI oTINI = new ReadINI("./Config.ini"))
+                {
+                    oTINI.setKeyValue("ServerPort", "Value", tb_Port.Text);
+                    oTINI.setKeyValue("ServerIP", "Value", tb_IP.Text);
+                    oTINI.setKeyValue("UserName", "Value", tb_UserName.Text);
+                }
+            }
+            catch
+            {
+
+            }
+            Close();
         }
     }
 
