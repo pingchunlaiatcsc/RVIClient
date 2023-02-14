@@ -55,7 +55,7 @@ namespace RVIClient
             //PicCMD = $"：{DateTime.Now.ToString("yyyyMMdd_hhmmss")}_KLE1234F";
             //Send("3" + "|" + "來自" + User + PicCMD + "|" + ConnectTarget + "\\");
             SendJSON(PicCMDJSON);
-            tb_log_text += DateTime.Now + " " + "告訴Server" + PicCMDJSON.Command + "\r\n";
+            tb_log_text += "Client send command (" + PicCMDJSON.Command + ") to Server\r\n";
 
             return tb_log_text;
         }

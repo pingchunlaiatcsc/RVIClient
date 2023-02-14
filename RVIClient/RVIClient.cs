@@ -179,12 +179,8 @@ namespace RVIClient
                                 lb_UserList.Items.Add(M[i]);           //逐一加入名單
                             }
                             break;
-                        //case "TakePicture":
-                        //    tb_log.AppendText("(銷帳拍照)" + JsonData.DateAndTime + "_" + JsonData.CarId + "\r\n");      //顯示訊息並換行
-                        //    CCTVWorkQueue.Enqueue(JsonData.DateAndTime + "_" + JsonData.CarId);
-                        //    break;
                         default:
-                            tb_log.AppendText($"({Cmd}) : {JsonData.Message}");
+                            tb_log.AppendText($"({Cmd} from {JsonData.Sender}) : {JsonData.Message}\r\n");
                             break;
                     }
                 }
@@ -203,19 +199,6 @@ namespace RVIClient
                     return;
                 }
 
-            }
-        }
-        private void ContinueDoCCTVWork()
-        {
-            CCTV.PhotosPath = PhotosPath;
-            CCTV.debugMode = debugMode;
-            while (true)
-            {
-                if (CCTVWorkQueue.Count != 0)
-                {
-                    CCTV.TakePic(CCTVWorkQueue.Dequeue());
-                    tb_log.AppendText(CCTV.errMessage);
-                }
             }
         }
         private void ContinueReadEPSLog()
@@ -238,33 +221,14 @@ namespace RVIClient
                 tb_log.AppendText(EPS.ImportImmediately());
                 //Communicate.SendTakePicCMD(listBox1, tb_ConnectTarget.Text, $"：{DateTime.Now.ToString("yyyyMMdd_hhmmss")}_KLE1234F", User);
                 Thread.Sleep(1000);
-                if (ReadCount >= 100)
+                if (ReadCount >= 1000)
                 {
-                    if (debugMode) File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WorkLog.txt"), tb_log.Text);
+                    //if (debugMode) File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WorkLog.txt"), tb_log.Text);
+                    File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WorkLog.txt"), tb_log.Text);
                     tb_log.Clear();
                     ReadCount = 0;
                 }
                 ReadCount++;
-            }
-        }
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (btn_connect.Enabled == false)
-            {
-                TCPClientData LogoutMsg = new TCPClientData
-                {
-                    Command = "UserLogOut",
-                    Sender = User
-                };
-                Communicate.SendJSON(LogoutMsg);//傳送自己的離線訊息給伺服器    
-                T.Close();
-            }
-
-            using (ReadINI oTINI = new ReadINI("./Config.ini"))
-            {
-                oTINI.setKeyValue("ServerPort", "Value", tb_Port.Text);
-                oTINI.setKeyValue("ServerIP", "Value", tb_IP.Text);
-                oTINI.setKeyValue("UserName", "Value", tb_UserName.Text);
             }
         }
         private void btn_sendMessage_Click(object sender, EventArgs e)
@@ -366,6 +330,72 @@ namespace RVIClient
         {
             timer.Enabled = false;
             CountDownTimeInSecond = 5;
+        }
+
+        private void RVIClient_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (btn_connect.Enabled == false)
+            {
+                TCPClientData LogoutMsg = new TCPClientData
+                {
+                    Command = "UserLogOut",
+                    Sender = User
+                };
+                Communicate.SendJSON(LogoutMsg);//傳送自己的離線訊息給伺服器    
+                T.Close();
+            }
+
+            try
+            {
+                using (ReadINI oTINI = new ReadINI("./Config.ini"))
+                {
+                    oTINI.setKeyValue("ServerPort", "Value", tb_Port.Text);
+                    oTINI.setKeyValue("ServerIP", "Value", tb_IP.Text);
+                    oTINI.setKeyValue("UserName", "Value", tb_UserName.Text);
+                }
+            }
+            catch
+            {
+
+            }
+            Close();
+        }
+
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.Show();
+        }
+
+        private void ExitMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void RecoverMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Show();
+        }
+
+        private void RVIClient_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (this.WindowState != FormWindowState.Minimized)
+            {
+                //隱藏程式本身的視窗
+                //this.Hide();
+                e.Cancel = true;
+                this.WindowState = FormWindowState.Minimized;
+                //notifyIcon1.Tag = string.Empty;
+
+                ////讓程式在工具列中隱藏
+                //this.ShowInTaskbar = false;
+                ////通知欄顯示Icon
+                //notifyIcon1.Visible = true;
+
+                ////通知欄提示 (顯示時間毫秒，標題，內文，類型)
+                //notifyIcon1.ShowBalloonTip(1000, this.Text, "縮小至工作列圖示區", ToolTipIcon.Info);
+                ////notifyIcon1.ShowBalloonTip(3000, this.Text,
+                ////     "程式並未結束，要結束請在圖示上按右鍵，選取結束功能!", ToolTipIcon.Info);
+            }
         }
     }
 

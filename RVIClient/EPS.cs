@@ -112,6 +112,7 @@ namespace RVIClient
                 if (allLinesCount == lastTimeReadLineIndex)
                 {
                     //tb_log_text = tb_log_text + DateTime.Now + " " + $"allLinesCount={allLinesCount}=lastTimeReadLineIndex={lastTimeReadLineIndex},代表log未新增紀錄，結束本次讀取作業。" + "\r\n";
+                    //tb_log_text = tb_log_text + DateTime.Now + "等待log更新中...\r\n";
                     return new List<remote_visual_inspection>();
                 }
 
