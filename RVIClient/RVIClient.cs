@@ -30,7 +30,6 @@ namespace RVIClient
         Thread Th_forCCTV;
         Thread Th_SocketConnectionSupervisor;
         string User;
-        static string PhotosPath;
         static Queue<string> CCTVWorkQueue = new Queue<string>();
         static Boolean debugMode = false;
         private System.Timers.Timer timer;
@@ -38,18 +37,50 @@ namespace RVIClient
         private Boolean SocketConnectionState = false;
         private Boolean ConnectTimerIsUsing = false;
         private Boolean SuperVisorIsStart = false;
+        private string Location;
+        private string EPSWorkLogPath;
         public RVIClient()
         {
             InitializeComponent();
-            using (ReadINI oTINI = new ReadINI(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.ini")))
+            using (ReadINI oTINI = new ReadINI(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "APP_Config.ini")))
             {
-                tb_Port.Text = oTINI.getKeyValue("ServerPort", "Value"); //Section name=ServerPort；Key name=Value
-                tb_IP.Text = oTINI.getKeyValue("ServerIP", "Value");
-                tb_UserName.Text = oTINI.getKeyValue("UserName", "Value");
-                PhotosPath = oTINI.getKeyValue("PhotosPath", "Value");
+                Location = oTINI.getKeyValue("Location", "Value");
+                string config_file;
+
+                switch (Location)
+                {
+                    case "Y423":
+                    case "C349_1":
+                    case "C349_2":
+                    case "TestEnv":
+                        config_file = $"{Location}_Config";
+                        break;
+                    default:
+                        config_file = $"Default_Config";
+                        break;
+                }
+                tb_IP.Text = oTINI.getKeyValue(config_file, "ServerIP");
+                tb_Port.Text = oTINI.getKeyValue(config_file, "ServerPort"); //Section name=ServerPort；Key name=Value
+                tb_ClientName.Text = oTINI.getKeyValue(config_file, "ClientName");
+                EPSWorkLogPath = oTINI.getKeyValue(config_file, "EPSWorkLogPath");
+                tb_Location.Text = Location;
             }
+
             debugMode = cb_debug.Checked;
             StartConnectTimer();
+        }
+        private string MyIP()
+        {
+            string hostName = Dns.GetHostName();
+            IPAddress[] IPs = Dns.GetHostEntry(hostName).AddressList;
+            foreach (IPAddress item in IPs)
+            {
+                if (item.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return item.ToString();//如果是IPv4則回傳此字串
+                }
+            }
+            return "";  //找不到合格回傳空字串
         }
         public void SupervisorStart()
         {
@@ -107,7 +138,7 @@ namespace RVIClient
 
             //建立可雙向通訊的TCP連線
             T = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            User = tb_UserName.Text;
+            User = tb_ClientName.Text;
 
             Communicate.T = T;
             try
@@ -135,7 +166,7 @@ namespace RVIClient
 
                 tb_log.AppendText(DateTime.Now + " " + "已連線伺服器!" + "\r\n");
                 SocketConnectionState = true;
-                ButtonStateCtrl();
+                //ButtonStateCtrl();
                 SupervisorStart();
             }
             catch (Exception ex)
@@ -143,7 +174,7 @@ namespace RVIClient
                 if (debugMode) File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "upload_err_log.txt"), DateTime.Now + " " + ex.ToString() + "\n");
                 tb_log.AppendText(DateTime.Now + " " + "無法連上伺服器!-StartConnecting" + "\r\n");
                 SocketConnectionState = false;
-                ButtonStateCtrl();
+                //ButtonStateCtrl();
                 SupervisorStart();
                 return;
             }
@@ -191,7 +222,7 @@ namespace RVIClient
                     lb_UserList.Items.Clear();                     //清除線上名單
                     tb_log.AppendText(DateTime.Now + " " + "無法連上伺服器!-Listen" + "\r\n");
                     SocketConnectionState = false;
-                    ButtonStateCtrl();
+                    //ButtonStateCtrl();
                     T.Close();
                     //if (ConnectTimerIsUsing == false) StartConnectTimer();
                     Th_forEPSLog.Abort();
@@ -215,6 +246,8 @@ namespace RVIClient
             EPS.User = User;
             EPS.dayShift = Double.Parse(tb_DayShift.Text);
             EPS.debugMode = debugMode;
+            EPS.Location = Location;
+            EPS.EPSWorklogPath = EPSWorkLogPath;
             int ReadCount = 0;
             while (true)
             {
@@ -282,7 +315,7 @@ namespace RVIClient
                 tb_log.AppendText(DateTime.Now + " " + "已從伺服器離線!" + "\r\n");
                 lb_UserList.Items.Clear();
                 SocketConnectionState = false;
-                ButtonStateCtrl();
+                //ButtonStateCtrl();
                 Th_forEPSLog.Abort();
             }
             catch (Exception ex)
@@ -300,7 +333,7 @@ namespace RVIClient
                 btn_takePic.Enabled = true;
                 btn_cancel_connect.Enabled = false;
                 tb_IP.Enabled = false;
-                tb_UserName.Enabled = false;
+                tb_ClientName.Enabled = false;
                 tb_Port.Enabled = false;
             }
             else
@@ -311,7 +344,7 @@ namespace RVIClient
                 btn_takePic.Enabled = false;
                 btn_cancel_connect.Enabled = true;
                 tb_IP.Enabled = true;
-                tb_UserName.Enabled = true;
+                tb_ClientName.Enabled = true;
                 tb_Port.Enabled = true;
             }
         }
@@ -390,7 +423,7 @@ namespace RVIClient
                 {
                     oTINI.setKeyValue("ServerPort", "Value", tb_Port.Text);
                     oTINI.setKeyValue("ServerIP", "Value", tb_IP.Text);
-                    oTINI.setKeyValue("UserName", "Value", tb_UserName.Text);
+                    oTINI.setKeyValue("UserName", "Value", tb_ClientName.Text);
                 }
             }
             catch

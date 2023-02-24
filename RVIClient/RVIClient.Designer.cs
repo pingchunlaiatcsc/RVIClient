@@ -33,7 +33,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tb_IP = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.tb_UserName = new System.Windows.Forms.TextBox();
+            this.tb_ClientName = new System.Windows.Forms.TextBox();
             this.tb_Port = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.btn_connect = new System.Windows.Forms.Button();
@@ -55,13 +55,15 @@
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ExitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RecoverMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tb_Location = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(186, 6);
+            this.label1.Location = new System.Drawing.Point(146, 51);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(48, 12);
             this.label1.TabIndex = 0;
@@ -69,7 +71,8 @@
             // 
             // tb_IP
             // 
-            this.tb_IP.Location = new System.Drawing.Point(240, 4);
+            this.tb_IP.Enabled = false;
+            this.tb_IP.Location = new System.Drawing.Point(200, 48);
             this.tb_IP.Name = "tb_IP";
             this.tb_IP.Size = new System.Drawing.Size(100, 22);
             this.tb_IP.TabIndex = 1;
@@ -77,22 +80,24 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(169, 66);
+            this.label2.Location = new System.Drawing.Point(129, 108);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(65, 12);
             this.label2.TabIndex = 2;
             this.label2.Text = "使用者名稱";
             // 
-            // tb_UserName
+            // tb_ClientName
             // 
-            this.tb_UserName.Location = new System.Drawing.Point(240, 66);
-            this.tb_UserName.Name = "tb_UserName";
-            this.tb_UserName.Size = new System.Drawing.Size(100, 22);
-            this.tb_UserName.TabIndex = 3;
+            this.tb_ClientName.Enabled = false;
+            this.tb_ClientName.Location = new System.Drawing.Point(200, 105);
+            this.tb_ClientName.Name = "tb_ClientName";
+            this.tb_ClientName.Size = new System.Drawing.Size(100, 22);
+            this.tb_ClientName.TabIndex = 3;
             // 
             // tb_Port
             // 
-            this.tb_Port.Location = new System.Drawing.Point(240, 33);
+            this.tb_Port.Enabled = false;
+            this.tb_Port.Location = new System.Drawing.Point(200, 77);
             this.tb_Port.Name = "tb_Port";
             this.tb_Port.Size = new System.Drawing.Size(100, 22);
             this.tb_Port.TabIndex = 5;
@@ -100,7 +105,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(177, 36);
+            this.label3.Location = new System.Drawing.Point(137, 80);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(57, 12);
             this.label3.TabIndex = 4;
@@ -119,12 +124,12 @@
             // 
             // tb_log
             // 
-            this.tb_log.Location = new System.Drawing.Point(15, 91);
+            this.tb_log.Location = new System.Drawing.Point(15, 134);
             this.tb_log.Multiline = true;
             this.tb_log.Name = "tb_log";
             this.tb_log.ReadOnly = true;
             this.tb_log.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tb_log.Size = new System.Drawing.Size(358, 177);
+            this.tb_log.Size = new System.Drawing.Size(285, 134);
             this.tb_log.TabIndex = 8;
             // 
             // tb_message
@@ -292,11 +297,30 @@
             this.RecoverMenuItem.Text = "還原";
             this.RecoverMenuItem.Click += new System.EventHandler(this.RecoverMenuItem_Click);
             // 
+            // tb_Location
+            // 
+            this.tb_Location.Enabled = false;
+            this.tb_Location.Location = new System.Drawing.Point(200, 20);
+            this.tb_Location.Name = "tb_Location";
+            this.tb_Location.Size = new System.Drawing.Size(100, 22);
+            this.tb_Location.TabIndex = 25;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(148, 29);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(46, 12);
+            this.label5.TabIndex = 26;
+            this.label5.Text = "Location";
+            // 
             // RVIClient
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(400, 271);
+            this.ClientSize = new System.Drawing.Size(319, 271);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.tb_Location);
             this.Controls.Add(this.lable1);
             this.Controls.Add(this.btn_cancel_connect);
             this.Controls.Add(this.cb_debug);
@@ -314,7 +338,7 @@
             this.Controls.Add(this.btn_connect);
             this.Controls.Add(this.tb_Port);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.tb_UserName);
+            this.Controls.Add(this.tb_ClientName);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.tb_IP);
             this.Controls.Add(this.label1);
@@ -334,7 +358,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox tb_IP;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox tb_UserName;
+        private System.Windows.Forms.TextBox tb_ClientName;
         private System.Windows.Forms.TextBox tb_Port;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btn_connect;
@@ -356,6 +380,8 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem ExitMenuItem;
         private System.Windows.Forms.ToolStripMenuItem RecoverMenuItem;
+        private System.Windows.Forms.TextBox tb_Location;
+        private System.Windows.Forms.Label label5;
     }
 }
 

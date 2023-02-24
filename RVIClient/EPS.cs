@@ -32,6 +32,8 @@ namespace RVIClient
         public static double dayShift;
         //SendTakePicCMD(listBox1, tb_ConnectTarget.Text, $"：{DateTime.Now.ToString("yyyyMMdd_hhmmss")}_KLE1234F", User);
         public static Boolean debugMode;
+        public static string Location;
+        public static string EPSWorklogPath;
         static public string ImportImmediately()
         {
             tb_log_text = "";
@@ -48,10 +50,28 @@ namespace RVIClient
             string myLogPath = "";
             //string myDest = "";
             string myTail;
-            string myLogFolder;
+            string myLogFolder="";
             using (ReadINI oTINI = new ReadINI(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.ini")))
             {
-                myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "Value"); //Section name=Worklog；Key name=Value              
+                switch (Location)
+                {
+                    case "TestEnv":
+                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "Test_Value"); //Section name=Worklog；Key name=Value
+                        break;
+                    case "Y423":
+                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "Y423_Value"); //Section name=Worklog；Key name=Value
+                        break;
+                    case "C349_1":
+                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "C349_1_Value"); //Section name=Worklog；Key name=Value
+                        break;
+                    case "C349_2":
+                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "C349_2_Value"); //Section name=Worklog；Key name=Value
+                        break;
+                    default:
+                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "Default_Value"); //Section name=Worklog；Key name=Value
+                        break;
+                }
+
                 myTail = myDate + "_WorkLog.log";
                 //myPath = myInIPath + myTail;
                 myLogPath = Path.Combine(myLogFolder, myTail);
@@ -172,6 +192,7 @@ namespace RVIClient
                                     rvi.coil8 = coil;
                             }
                             rvi.tdate = DateTime.Parse(item.Substring(0, commaPos1));
+                            rvi.location = Location;
                             rviList.Add(rvi);
                             carId = "";
                             coilList = new List<string>();
@@ -271,6 +292,7 @@ namespace RVIClient
                     $"&coil6={rvi.coil6}" +
                     $"&coil7={rvi.coil7}" +
                     $"&coil8={rvi.coil8}" +
+                    $"&location={rvi.location}" +
                     $"&creator={rvi.creator}";
                 request = (HttpWebRequest)HttpWebRequest.Create(url + $"/create?{Param}");
                 request.CookieContainer = cookieContainer;
