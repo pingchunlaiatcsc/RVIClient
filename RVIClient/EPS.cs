@@ -51,26 +51,22 @@ namespace RVIClient
             //string myDest = "";
             string myTail;
             string myLogFolder="";
-            using (ReadINI oTINI = new ReadINI(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.ini")))
+            using (ReadINI oTINI = new ReadINI(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "APP_Config.ini")))
             {
+                string config_file;
                 switch (Location)
                 {
-                    case "TestEnv":
-                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "Test_Value"); //Section name=Worklog；Key name=Value
-                        break;
                     case "Y423":
-                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "Y423_Value"); //Section name=Worklog；Key name=Value
-                        break;
                     case "C349_1":
-                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "C349_1_Value"); //Section name=Worklog；Key name=Value
-                        break;
                     case "C349_2":
-                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "C349_2_Value"); //Section name=Worklog；Key name=Value
+                    case "TestEnv":
+                        config_file = $"{Location}_Config";
                         break;
                     default:
-                        myLogFolder = oTINI.getKeyValue("EPSWorklogPath", "Default_Value"); //Section name=Worklog；Key name=Value
+                        config_file = $"Default_Config";
                         break;
                 }
+                        myLogFolder = oTINI.getKeyValue(config_file, "EPSWorklogPath"); //Section name=Worklog；Key name=Value
 
                 myTail = myDate + "_WorkLog.log";
                 //myPath = myInIPath + myTail;
@@ -190,6 +186,20 @@ namespace RVIClient
                                     rvi.coil7 = coil;
                                 else if (rvi.coil8 is null)
                                     rvi.coil8 = coil;
+                                else if (rvi.coil9 is null)
+                                    rvi.coil9 = coil;
+                                else if (rvi.coil10 is null)
+                                    rvi.coil10 = coil;
+                                else if (rvi.coil11 is null)
+                                    rvi.coil11 = coil;
+                                else if (rvi.coil12 is null)
+                                    rvi.coil12 = coil;
+                                else if (rvi.coil13 is null)
+                                    rvi.coil13 = coil;
+                                else if (rvi.coil14 is null)
+                                    rvi.coil14 = coil;
+                                else if (rvi.coil15 is null)
+                                    rvi.coil15 = coil;
                             }
                             rvi.tdate = DateTime.Parse(item.Substring(0, commaPos1));
                             rvi.location = Location;
@@ -292,6 +302,14 @@ namespace RVIClient
                     $"&coil6={rvi.coil6}" +
                     $"&coil7={rvi.coil7}" +
                     $"&coil8={rvi.coil8}" +
+                    $"&coil9={rvi.coil9}" +
+                    $"&coil10={rvi.coil10}" +
+                    $"&coil11={rvi.coil11}" +
+                    $"&coil12={rvi.coil12}" +
+                    $"&coil13={rvi.coil13}" +
+                    $"&coil14={rvi.coil14}" +
+                    $"&coil15={rvi.coil15}" +
+                    $"&coil16={rvi.coil16}" +
                     $"&location={rvi.location}" +
                     $"&creator={rvi.creator}";
                 request = (HttpWebRequest)HttpWebRequest.Create(url + $"/create?{Param}");
@@ -321,7 +339,7 @@ namespace RVIClient
                 while (UpLoadAgain)
                 {
                     StringBuilder sb = new StringBuilder();
-                    sb.Append($"{rvi.tdate}/{rvi.carId}/{rvi.coil1}/{rvi.coil2}/{rvi.coil3}/{rvi.coil4}/{rvi.coil5}/{rvi.coil6}/{rvi.coil7}/{rvi.coil8} UpLoad Fail.");
+                    sb.Append($"{rvi.tdate}/{rvi.carId}/{rvi.coil1}/{rvi.coil2}/{rvi.coil3}/{rvi.coil4}/{rvi.coil5}/{rvi.coil6}/{rvi.coil7}/{rvi.coil8}/{rvi.coil9}/{rvi.coil10}/{rvi.coil11}/{rvi.coil12}/{rvi.coil13}/{rvi.coil14}/{rvi.coil15}/{rvi.coil16} UpLoad Fail.");
                     if (debugMode) File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "upload_err_log.txt"), DateTime.Now + " " + sb + "\n");
                     sb.Clear();
                     System.Threading.Thread.Sleep(1000);

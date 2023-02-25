@@ -66,7 +66,7 @@ namespace RVIClient
                 tb_Location.Text = Location;
             }
 
-            debugMode = cb_debug.Checked;
+            //debugMode = cb_debug.Checked;
             StartConnectTimer();
         }
         private string MyIP()
@@ -419,12 +419,12 @@ namespace RVIClient
 
             try
             {
-                using (ReadINI oTINI = new ReadINI("./Config.ini"))
-                {
-                    oTINI.setKeyValue("ServerPort", "Value", tb_Port.Text);
-                    oTINI.setKeyValue("ServerIP", "Value", tb_IP.Text);
-                    oTINI.setKeyValue("UserName", "Value", tb_ClientName.Text);
-                }
+                //using (ReadINI oTINI = new ReadINI("./Config.ini"))
+                //{
+                //    oTINI.setKeyValue("ServerPort", "Value", tb_Port.Text);
+                //    oTINI.setKeyValue("ServerIP", "Value", tb_IP.Text);
+                //    oTINI.setKeyValue("UserName", "Value", tb_ClientName.Text);
+                //}
             }
             catch
             {
