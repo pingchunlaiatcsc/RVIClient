@@ -38,7 +38,6 @@ namespace RVIClient
         private Boolean ConnectTimerIsUsing = false;
         private Boolean SuperVisorIsStart = false;
         private string Location;
-        private string EPSWorkLogPath;
         public RVIClient()
         {
             InitializeComponent();
@@ -56,13 +55,12 @@ namespace RVIClient
                         config_file = $"{Location}_Config";
                         break;
                     default:
-                        config_file = $"Default_Config";
+                        config_file = $"Spare_Config";
                         break;
                 }
                 tb_IP.Text = oTINI.getKeyValue(config_file, "ServerIP");
                 tb_Port.Text = oTINI.getKeyValue(config_file, "ServerPort"); //Section name=ServerPort；Key name=Value
                 tb_ClientName.Text = oTINI.getKeyValue(config_file, "ClientName");
-                EPSWorkLogPath = oTINI.getKeyValue(config_file, "EPSWorkLogPath");
                 tb_Location.Text = Location;
             }
 
@@ -247,7 +245,6 @@ namespace RVIClient
             EPS.dayShift = Double.Parse(tb_DayShift.Text);
             EPS.debugMode = debugMode;
             EPS.Location = Location;
-            EPS.EPSWorklogPath = EPSWorkLogPath;
             int ReadCount = 0;
             while (true)
             {

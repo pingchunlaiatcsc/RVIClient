@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace RVIClient
 {
@@ -33,7 +34,7 @@ namespace RVIClient
         //SendTakePicCMD(listBox1, tb_ConnectTarget.Text, $"：{DateTime.Now.ToString("yyyyMMdd_hhmmss")}_KLE1234F", User);
         public static Boolean debugMode;
         public static string Location;
-        public static string EPSWorklogPath;
+        public static string EPSVersion;
         static public string ImportImmediately()
         {
             tb_log_text = "";
@@ -44,13 +45,13 @@ namespace RVIClient
                 lastTimeReadLineIndex = 0;
             }
             //string myDate = DateTime.Now.Date.AddDays(dayShift).ToString("yyyy-MM-dd");
-            string myDate = workingDate.ToString("yyyy-MM-dd");
+            string myDate;
             //string myDate = "2022-08-23";
 
             string myLogPath = "";
             //string myDest = "";
             string myTail;
-            string myLogFolder="";
+            string myLogFolder = "";
             using (ReadINI oTINI = new ReadINI(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "APP_Config.ini")))
             {
                 string config_file;
@@ -63,15 +64,25 @@ namespace RVIClient
                         config_file = $"{Location}_Config";
                         break;
                     default:
-                        config_file = $"Default_Config";
+                        config_file = $"Spare_Config";
                         break;
                 }
-                        myLogFolder = oTINI.getKeyValue(config_file, "EPSWorklogPath"); //Section name=Worklog；Key name=Value
+                myLogFolder = oTINI.getKeyValue(config_file, "EPSWorklogPath"); //Section name=Worklog；Key name=Value
+                string worklog_filename = oTINI.getKeyValue(config_file, "EPSWorkLogFileName"); //Section name=Date；Key name=Value
+                string worklog_filename_extension = oTINI.getKeyValue(config_file, "EPSWorkLogFileNameExtension"); //Section name=Date；Key name=Value
+                EPSVersion = oTINI.getKeyValue(config_file, "EPSVersion"); //Section name=Date；Key name=Value
 
-                myTail = myDate + "_WorkLog.log";
-                //myPath = myInIPath + myTail;
+                if (EPSVersion == "before2023")
+                {
+                    myDate = workingDate.ToString("yyyy-MM-dd");
+                    myTail = myDate + "_WorkLog.log";
+                }
+                else
+                {
+                    myDate = workingDate.ToString("yyyyMMdd");
+                    myTail = worklog_filename + myDate + worklog_filename_extension;
+                }
                 myLogPath = Path.Combine(myLogFolder, myTail);
-                //myDest = Path.Combine(appLocation, "ActiveWorkLog.log");
             }
 
             List<remote_visual_inspection> rviList = new List<remote_visual_inspection>();
@@ -139,31 +150,52 @@ namespace RVIClient
                     {
                         if (item.IndexOf("車輛報到") != -1)
                         {
-                            var tt = item.IndexOf("車輛報到");
-                            int commaPos1 = item.IndexOf(",");
-                            int car_checkin_pos = commaPos1 + 7;
-                            int car_Num_start_pos = car_checkin_pos + 4;
-                            carId = item.Substring(car_Num_start_pos, 8);
-                            tb_log_text = tb_log_text + DateTime.Now + " " + $"{carId} 報到成功" + "\r\n";
+                            if (EPSVersion == "before2023")
+                            {
+                                var tt = item.IndexOf("車輛報到");
+                                int commaPos1 = item.IndexOf(",");
+                                int car_checkin_pos = commaPos1 + 7;
+                                int car_Num_start_pos = car_checkin_pos + 4;
+                                carId = item.Substring(car_Num_start_pos, 8);
+                                tb_log_text = tb_log_text + DateTime.Now + " " + $"{carId} 報到成功" + "\r\n";
+                            }
+                            else
+                            {
+                                int firstColonPos = item.IndexOf(":");
+                                int secondColonPos = item.IndexOf(":", firstColonPos + 1);
+                                int thirdColonPos = item.IndexOf(":", secondColonPos + 1);
+                                int fourthColonPos = item.IndexOf(":", thirdColonPos + 1);
+                                int fifthColonPos = item.IndexOf(":", fourthColonPos + 1);
+                                int car_Num_start_pos = fifthColonPos + 1;
+                                carId = item.Substring(car_Num_start_pos, 8).Trim();
+                                tb_log_text = item.Substring(car_Num_start_pos, 8).Trim() + "\n報到成功";
+                            }
                         }
                         else if (item.IndexOf("掃瞄車上鋼品") != -1)
                         {
-                            var tt = item.IndexOf("掃瞄車上鋼品");
-
+                            //EPSVersion == "before2023"
+                            var tt = item;
+                            var yy = item.IndexOf("掃瞄車上鋼品");
                             var commaPos1 = item.IndexOf(",");
                             var commaPos2 = item.IndexOf("顆", commaPos1 + 1);
                             var commaPos3 = item.IndexOf(",", commaPos1 + 1);
-                            //line += item.Substring(commaPos1 + 1, commaPos2 - commaPos1 - 1) + "\n";
                             tb_log_text = tb_log_text + DateTime.Now + " " + $"掃瞄車上鋼品 {item.Substring(commaPos2 + 1, commaPos3 - commaPos2 - 1)}" + "\r\n";
                             coilList.Add(item.Substring(commaPos2 + 1, commaPos3 - commaPos2 - 1));
                         }
+                        else if (item.IndexOf("掃描車上鋼品") != -1)
+                        {
+                            //EPSVersion == "after2023"
+                            var tt = item;
+                            int firstColonPos = item.IndexOf(":");
+                            int secondColonPos = item.IndexOf(":", firstColonPos + 1);
+                            int thirdColonPos = item.IndexOf(":", secondColonPos + 1);
+                            var commaPos1 = item.IndexOf("顆", thirdColonPos + 1);
+                            var commaPos2 = item.IndexOf(",", thirdColonPos + 1);
+                            tb_log_text = tb_log_text + DateTime.Now + " " + $"掃描車上鋼品 {item.Substring(commaPos1 + 1, commaPos2 - commaPos1 - 1)}" + "\r\n";
+                            coilList.Add(item.Substring(commaPos1 + 1, commaPos2 - commaPos1 - 1));
+                        }
                         else if (item.IndexOf("放行") != -1)
                         {
-                            var tt = item.IndexOf("放行");
-                            var commaPos1 = item.IndexOf(",");
-                            //line += item.Substring(commaPos1 + 1) + "\n" + "等待車輛報到中........\n";
-
-                            //keep_Queue.Clear();
                             tb_log_text = tb_log_text + DateTime.Now + " " + $"{carId} 放行";
                             remote_visual_inspection rvi = new remote_visual_inspection();
                             rvi.carId = carId;
@@ -201,7 +233,19 @@ namespace RVIClient
                                 else if (rvi.coil15 is null)
                                     rvi.coil15 = coil;
                             }
-                            rvi.tdate = DateTime.Parse(item.Substring(0, commaPos1));
+
+                            if (EPSVersion == "before2023")
+                            {
+                                var commaPos1 = item.IndexOf(",");
+                                rvi.tdate = DateTime.Parse(item.Substring(0, commaPos1));
+                            }
+                            else
+                            {
+                                int firstColonPos = item.IndexOf(":");
+                                int secondColonPos = item.IndexOf(":", firstColonPos + 1);
+                                int thirdColonPos = item.IndexOf(":", secondColonPos + 1);
+                                rvi.tdate = DateTime.Parse(item.Substring(0, thirdColonPos));
+                            }
                             rvi.location = Location;
                             rviList.Add(rvi);
                             carId = "";
